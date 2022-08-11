@@ -85,7 +85,7 @@ A rota de exclusão de usuário é capaz de excluir usuários:
   
   ```
   {
-	"_id": "62e7bdfcf2fe4483c0fc1f77",
+	"id": "62e7bdfcf2fe4483c0fc1f77",
 	"name": "daniel",
 	"email": "daniel@kenzie.com",
 	"isAdm": true,
@@ -165,14 +165,13 @@ A rota de exclusão de usuário é capaz de excluir usuários:
   ```
   [
     {
-      "_id": "62e7bd625f2f7fffcc4d617c",
+      "id": "62e7bd625f2f7fffcc4d617c",
       "name": "daniel",
       "email": "daniel@kenzie.com",
       "password": "$2a$10$.ojNDhChN.SqNvB1h8jEfuxysWrXiMRHlCRzrzW4TbcZZP2rA8vAG",
       "isAdm": true,
       "createdOn": "2022-08-01T11:47:46.858Z",
       "updatedOn": "2022-08-01T11:47:46.858Z",
-      "__v": 0
     }
   ]
   ``` 
@@ -215,13 +214,12 @@ A rota de exclusão de usuário é capaz de excluir usuários:
   ```
   
 	{
-		"_id": "62e7bd625f2f7fffcc4d617c",
+		"id": "62e7bd625f2f7fffcc4d617c",
 		"name": "daniel",
 		"email": "daniel@kenzie.com",
 		"isAdm": true,
 		"createdOn": "2022-08-01T11:47:46.858Z",
 		"updatedOn": "2022-08-01T11:47:46.858Z",
-		"__v": 0
 	}
   
   ``` 
@@ -257,7 +255,7 @@ Status: 401 UNAUTHORIZED
   
 ```
   {
-	"_id": "62e7bdfcf2fe4483c0fc1f77",
+	"id": "62e7bdfcf2fe4483c0fc1f77",
 	"name": "daniel",
 	"email": "daniel2@kenzie.com",
 	"isAdm": false,
