@@ -1,136 +1,326 @@
-# Express: CRUD de usuário + permissão de administrador
+# Endpoints do serviço:
+  
+| Método | Endpoint |Responsabilidade  | 
+| ----- | ------------- |------------- |
+| POST  | /users  |Criação de usuários  | 
+| POST  | /login |Gera um token JWT recebendo email e password no corpo da requisição como JSON.|
+| GET  | /users |Lista todos os usuários|
+| GET  | /users/profile |Retorna os dados do usuário logado (usuário a qual pertence o token que será necessário neste endpoint).|
+| PATCH  | /users/<id> |Atualiza os dados de um usuário.|
+| DELETE  | /users/<id> |Deleta usuários do banco.|
+  
+## POST - /users
+Rota para criação de usuário com os seguintes dados:
+  
+> name: string
+> email: string
+> password: Receber uma string mas armazena uma hash gerada com o bcrypt
+  
+> isAdm: boolean
+  
+> createdOn: É gerado no momento na validação dos dados no formato Date
+  
+> updatedOn: É gerado no momento na validação dos dados no formato Date, possuí o valor de criação e é atualizado sempre que o usuário é atualizado.
+  
+> id: Gerado no momento da validação dos dados pelo Banco de dados e é número randômico.
+  
+- (Regra de negócio)
+  - A rota de criação retorna todos os dados, com exceção da hash de senha.
+  - Não podem ser cadastrados dois usuário com o mesmo e-mail.
+  
+## POST - /login
+Rota de login recebe email e o password:
+  
+> O login deve valida se o usuário existe e valida se a senha está correta.
+  
+> A rota de login retorna um token JWT válido por 24h caso todas as validações passem.
+ 
+## GET - /users
+A rota de listagem de usuários retorna todos os dados dos usuários, incluindo os hashs de senhas:
+  
+> Essa está protegida por um middleware de validação do token JWT
+> Essa rota só é acessada por usuários que sejam administradores
 
-Para inciar este projeto, é necessário instalar as dependências, que serão utilizadas nos testes. Portanto utilize o comando abaixo para instalar tais dependências:
+## GET - /users/profile
+> A rota de perfil retorna os dados do usuário que fez a requisição
+> Essa rota está protegida por um middleware de validação do token JWT
+  
+## PATCH - /users/<id>
+A rota de atualização de usuário é capaz de atualizar tanto um quanto todos os dados de um usuário:
+  
+> Essa rota está protegida por um middleware de validação do token JWT
+> O campo updatedAt é atualizado com uma string no formato Date, representando o momento da atualização
+  
+- (Regra de negócio)
+  - O campo isAdm NÃO pode ser atualizado.
+  - Apenas administradores podem atualizar qualquer usuário, usuários não-administradores podem apenas atualizar seu próprio usuário.
+  - A rota de atualização de usuário retorna os dados do usuário atualizado.
+  
+## DELETE - /users/<id>
+A rota de exclusão de usuário é capaz de excluir usuários:
+  
+> Está rota é protegida por um middleware de validação do token JWT
+  
+- (Regra de negócio)
+  - Apenas administradores podem excluir qualquer usuário, usuários não-administradores podem apenas excluir seu próprio usuário.
+  - A rota de exclusão de usuário retorna um objeto com uma chave de nome "mensagem" com o valor "User deleted with success".
 
-````
-yarn install
-````
-
-
-**Atenção:** é necessário utilizar o `yarn` pois esse projeto foi iniciado com esse gerenciador de pacotes.
-
-Para verificar se já possui o gerenciador yarn instalado utilize o seguinte comando:
-
-````
-yarn --version
-````
-
-Caso não possua o yarn instalado, utilize o comando abaixo para instalar globalmente na sua máquina:
-
-````
-npm install --global yarn
-````
-# **Sobre os testes**
-
-Essa aplicação possui testes, que serão utilizados para validar, se todas as regras de negócio foram aplicadas de maneira correta.
-
-Os testes estão localizados em `src/test/user.spec.js`. 
-
-**De modo algum altere esse arquivo.** Isso poderá comprometer a integridade dos testes.
-
-Além disso, é importante não alterar o arquivo `.babelrc`. (não se preocupe em saber para que serve isso por enquanto).
-
-E também não altere o script de `test` localizado no `package.json`. Isso será utilizado para rodar os testes.
-
-
-# **Rodando os testes** 
-
-Para rodar os testes é necessário que no seu terminal, você esteja dentro do diretório do projeto.
-
-Estando no terminal e dentro do caminho correto, você deverá utilizar o seguinte comando:
-
-````
-yarn test
-````
-caso seja necessário um log mais completo, utilize o comando:
-````
-yarn test --all
-````
-Após isso aparecerá um log no seu terminal, contendo as informações da execução do teste.
-
-**Observação:** O teste pode demorar alguns segundos para ser finalizado.
-
-O seu objetivo é que a mensagem nesse log se pareça com essa:
-`````
-yarn run v1.22.18
-$ jest --all
-  console.log
-    Server is running on http://localhost:3000
-
-      at Server.log (src/app.js:10:32)
-
- PASS  src/test/user.spec.js
-  Testing success cases in the routes
-    √ Testando criação de usuário com um corpo correto (142 ms)                                                                                                    
-    √ Testando criação de usuário com e-mail já utilizado (4 ms)                                                                                                   
-    √ Testando login válido (71 ms)                                                                                                                                
-    √ Testando login inválido (68 ms)                                                                                                                              
-    √ Testando listagem de usuários (73 ms)                                                                                                                        
-    √ Testando listagem de usuários sem token (3 ms)                                                                                                               
-    √ Testando listagem de usuários sem autorização (144 ms)                                                                                                       
-    √ Testando listagem do perfil de usuário (73 ms)                                                                                                               
-    √ Testando listagem do perfil de usuário (3 ms)                                                                                                                
-    √ Testando atualização sem token (73 ms)                                                                                                                       
-    √ Testando atualização do próprio usuário sem permissão de ADM (75 ms)                                                                                         
-    √ Testando atualização de outro usuário sem permissão de ADM (141 ms)                                                                                          
-    √ Testando atualização de qualquer usuário com permissão de ADM (134 ms)                                                                                       
-    √ Testando deleção sem token (70 ms)                                                                                                                           
-    √ Testando deleção de outro usuário sem permissão de ADM (143 ms)                                                                                              
-    √ Testando deleção de outro usuário com permissão de ADM (137 ms)                                                                                              
-    √ Testando deleção do próprio usuário (75 ms)                                                                                                                  
-                                                                                                                                                                   
-Test Suites: 1 passed, 1 total                                                                                                                                     
-Tests:       17 passed, 17 total                                                                                                                                   
-Snapshots:   0 total
-Time:        1.957 s, estimated 3 s
-Ran all test suites.
-Jest did not exit one second after the test run has completed.
-
-This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.
-`````
-# **Entendendo o log**
-
-### Aqui vão algumas explicações sobre cada componente da saída do seu teste:
-- `PASS  src/test/user.spec.js`: Essa linha mostra que todos os testes, contidos no arquivo especificado, foram executados com êxito;
-- `Testing success cases in the routes`: aqui é dado uma lista com parte ou todos os testes executados;
-    ````
-    √ Testando criação de usuário com um corpo correto (151 ms)                                                                                                    
-    √ Testando criação de usuário com e-mail já utilizado (7 ms)                                                                                                   
-    √ Testando login válido (76 ms)                                                                                                                                
-    √ Testando login inválido (77 ms)                                                                                                                              
-    √ Testando listagem de usuários (91 ms)                                                                                                                        
-    √ Testando listagem de usuários sem token (2 ms)                                                                                                               
-    √ Testando listagem de usuários sem autorização (147 ms)
-    ````
-- `Test Suites: 1 passed, 1 total`: aqui estão a quantidade de blocos de testes executados e quantos desses blocos passaram ou falharam nos testes;
-- `Tests: 17 passed, 17`: nessa linha estão a quantidade total de testes executados, assim como quantos falharam ou tiveram sucesso;
-##
-Caso o seu teste **falhe**, você reberá `FAIL  src/test/user.spec.js` ao invés de `PASS  src/test/user.spec.js`.
-
-Para um feedback mais preciso olhe para a lista de testes executados busque pelo erro específico.
-
-***O teste que falhou irá aparecer com um `x` ao invés de um `√`.***
-
-E logo abaixo da lista de testes executados irá aparecer uma ou mais mensagens, com o que era esperado (Expected) e com o que foi recebido de fato (Received).
-
-`````
- FAIL  src/test/user.spec.js
-  Testing success cases in the routes
-    √ Testando criação de usuário com um corpo correto (150 ms)                                                                                                    
-    √ Testando criação de usuário com e-mail já utilizado (4 ms)                                                                                                   
-    √ Testando login válido (4 ms)                                                                                                                                 
-    × Testando login inválido (4 ms)                                                                                                                               
-    √ Testando listagem de usuários (6 ms)                                                                                                                         
-    √ Testando listagem de usuários sem token (3 ms)                                                                                                               
-    √ Testando listagem de usuários sem autorização (80 ms)                                                                                                        
-                                                                                                                                                                   
-  ● Testing success cases in the routes › Testando login inválido                                                                                                  
-                                                                                                                                                                   
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: 401
-    Received: 200
-
-`````
-#
-### Agora que já sabe como iniciar o seu projeto, rodar os testes e lê-los, é hora de colocar a mão no código!
+ ---------------------
+  
+# Exemplos de requisições:
+  
+  ## Criando usuário:
+  
+  POST: /users
+  
+  ```
+  {
+    "name": "daniel",
+    "email": "daniel@kenzie.com",
+    "password": "123456",
+    "isAdm": true
+  }
+  ```
+  Status: 201 CREATED
+  
+  ```
+  {
+	"_id": "62e7bdfcf2fe4483c0fc1f77",
+	"name": "daniel",
+	"email": "daniel@kenzie.com",
+	"isAdm": true,
+	"createdOn": "2022-08-01T11:50:20.584Z",
+	"updatedOn": "2022-08-01T11:50:20.584Z"
+  }
+  
+  ```
+  
+## Criando usuário com e-mail já existente:
+  
+  POST: /users
+  
+  ```
+  {
+    "name": "daniel",
+    "email": "daniel@kenzie.com",
+    "password": "123456",
+    "isAdm": true
+  }
+  ```
+  
+  Status: 400 BAD REQUEST
+  
+  ```
+  {
+      "message": "E-mail already registered",
+  }
+  ```
+----------------------------------------------------  
+  ## Login:
+  
+  POST: /login
+  
+```
+  {
+      "email": "daniel@kenzie.com",
+      "password": "123456",
+  }
+```
+  Status: 200 OK
+  
+ ```
+    {
+        "token": "4b72c6f34b72c6f3-6d0a-6a1-86c6-687d52de4fc7-6d0a-6a1-86c6-687d
+        2c6f3-6d0a-6a1-86c6-687d52de4fc74b72c6f3-6d0a-6a1-86c6-687d52de4fc7",
+    }
+ ```
+  
+  ## Login inválido:
+  POST: /login
+  
+ ```
+{
+    "email": "daniel@mail.com",
+    "password": "123456",
+}
+  ```
+  
+  Status: 401 UNAUTHORIZED
+  
+  ```
+{
+    "message": "Wrong email/password",
+}
+  ``` 
+  ----------------------------------------------------  
+  
+ ## Listando usuários:
+  
+  GET: /users
+  
+  - Com header de autorização.
+  
+  Status: 200 OK
+  
+  ```
+  [
+    {
+      "_id": "62e7bd625f2f7fffcc4d617c",
+      "name": "daniel",
+      "email": "daniel@kenzie.com",
+      "password": "$2a$10$.ojNDhChN.SqNvB1h8jEfuxysWrXiMRHlCRzrzW4TbcZZP2rA8vAG",
+      "isAdm": true,
+      "createdOn": "2022-08-01T11:47:46.858Z",
+      "updatedOn": "2022-08-01T11:47:46.858Z",
+      "__v": 0
+    }
+  ]
+  ``` 
+  
+  ## Listando usuários sem token:
+  
+  GET: /users
+  
+  - Sem header de autorização.
+  
+  Status: 401 UNAUTHORIZED
+  
+```
+{
+    "message": "Missing authorization headers",
+}
+``` 
+  
+  ## Listando usuários sem ser administrador:
+  
+  GET: /users
+  
+  - Com header de autorização.
+  
+    Status: 401 UNAUTHORIZED
+  
+  ```
+  {
+       "message": "Unauthorized",
+  }
+  ``` 
+  
+  ## Dados do perfil:
+  
+  GET: /users/profile
+  
+   - Com header de autorização.
+  Status: 200 OK
+  
+  ```
+  
+	{
+		"_id": "62e7bd625f2f7fffcc4d617c",
+		"name": "daniel",
+		"email": "daniel@kenzie.com",
+		"isAdm": true,
+		"createdOn": "2022-08-01T11:47:46.858Z",
+		"updatedOn": "2022-08-01T11:47:46.858Z",
+		"__v": 0
+	}
+  
+  ``` 
+  
+  ## Dados do perfil sem token:
+  
+GET: /users/profile
+  
+- Sem header de autorização.
+  
+Status: 401 UNAUTHORIZED
+  
+```
+{
+      "message": "Missing authorization headers",
+}
+``` 
+  ----------------------------------------------------  
+  ## Atualizando usuário:
+  
+  PATCH: /users/<id>
+  
+- Com header de autorização.
+  
+```
+{
+    "name": "Daniel Kenzie"
+    "email": "daniel@kenzie.com.br",
+}
+``` 
+  
+  Status: 200 OK
+  
+```
+  {
+	"_id": "62e7bdfcf2fe4483c0fc1f77",
+	"name": "daniel",
+	"email": "daniel2@kenzie.com",
+	"isAdm": false,
+	"createdOn": "2022-08-01T11:50:20.584Z",
+	"updatedOn": "2022-08-01T13:39:50.715Z"
+  }
+```
+  
+- Sem header de autorização.
+  
+Status: 401 UNAUTHORIZED
+  
+```
+{
+      "message": "Missing authorization headers",
+}
+``` 
+  
+## Atualizando outro usuário sem ser administrador
+  
+- Com header de autorização.
+  
+Status: 401 UNAUTHORIZED
+  
+```
+{
+      "message": "Missing admin permissions",
+}
+``` 
+  ----------------------------------------------------  
+## Excluindo usuário
+  
+  
+DELETE: /users/<id>
+  
+- Com header de autorização.
+  
+Status: 200 OK
+  
+``` 
+{
+      "message": "User deleted with success",
+}
+```   
+- Sem header de autorização.
+  
+Status: 401 UNAUTHORIZED
+  
+```
+{
+      "message": "Missing authorization headers",
+}
+``` 
+  
+## Excluindo outro usuário sem ser administrador  
+  
+- Com header de autorização.
+  
+Status: 401 UNAUTHORIZED
+  
+```
+{
+      "message": "Missing admin permissions",
+}
+```  
+  
